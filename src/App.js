@@ -19,12 +19,23 @@ function App() {
         ))
     }
 
+    function handleToggleItem(id) {
+        setItems((items) =>
+            items.map((item) => item.id === id ?
+                {...item, packed: !item.packed}:
+                item
+            )
+        )
+
+
+    }
+
   return (
     <div className="app">
       <Logo/>
       <Form onAddItems={handleAddItems} />
-      <PackingList items={items} onDeleteItem={handleDeleteItem}/>
-      <Stats/>
+      <PackingList items={items} onDeleteItem={handleDeleteItem} onPackedItem={handleToggleItem}/>
+      <Stats items={items}/>
     </div>
   );
 }
@@ -92,25 +103,26 @@ function Form({onAddItems}) {
 }
 
 
-function PackingList({items,onDeleteItem}) {
+function PackingList({items,onDeleteItem,onPackedItem}) {
     /*COMPONENT TO HOLD COMPLETE PACKING LIST ITEMS AND A PASSED DOWN HANDLER*/
 
     return (
         <div className="list">
             <ul>
                 {items.map((item) => (
-                    <Item key={item.id} item={item} onDeleteItem={onDeleteItem} />
+                    <Item key={item.id} item={item} onDeleteItem={onDeleteItem} onPackedItem={onPackedItem} />
                 ))}
             </ul>
         </div>
     );
 }
 
-function Item({item,onDeleteItem}) {
+function Item({item,onDeleteItem,onPackedItem}) {
     /* MAPPING ITEM TO LI WITH ITEM NAME SPAN  AND BUTTON USING PASSED DOWN HANDLER onDeleteItem*/
 
     return (
         <li className={""}>
+            <input type="checkbox" value={item.packed} onChange={() => {onPackedItem(item.id)}}/>
             <span style={item.packed ? {textDecoration: 'line-through'} : {}}>
             {item.quantity} {item.description}
             </span>
@@ -120,17 +132,24 @@ function Item({item,onDeleteItem}) {
 }
 
 
-function Stats(props) {
+function Stats({items}) {
+    const numItems = items.length;
+    const numPacked = items.filter((item) => item.packed).length
+    const numPackedPercent = Math.floor((numPacked/numItems) * 100);
+
+
   return (
       <footer className={"stats"}>
           <em>
-              You have 8 items on your list, and you already packed 3 (40%)
+              {`You have ${numItems} ${numItems > 1 || numItems === 0 ? `items` : `item` } on your list, and you already packed ${numPacked} (${numPackedPercent}%)`}
           </em>
       </footer>
   );
 }
 
-
+/*
+* INITIALISING ITEMS
+* */
 const initialItems = [
     { id: 1, description: "Passports", quantity: 2, packed: false },
     { id: 2, description: "Socks", quantity: 12, packed: true },
